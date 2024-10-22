@@ -28,14 +28,14 @@ jobs:
             cmake CMakeLists.txt
             ls -al
             cmake --build . --target INSTALL --config Release
-            mv Release/tree-sitter-json.dll tree-sitter-json-${{runner.arch}}.dll
+            mv Release/tree-sitter-graphql.dll tree-sitter-graphql-${{runner.arch}}.dll
           else
             cmake CMakeLists.txt
             make
             if [ "$RUNNER_OS" == "macOS" ]; then
-              mv libtree-sitter-json.dylib libtree-sitter-json-${{runner.arch}}.dylib
+              mv libtree-sitter-graphql.dylib libtree-sitter-graphql-${{runner.arch}}.dylib
             else
-              mv libtree-sitter-json.so libtree-sitter-json-${{runner.arch}}.so
+              mv libtree-sitter-graphql.so libtree-sitter-graphql-${{runner.arch}}.so
             fi
           fi
         shell: bash # let Windows use bash
