@@ -1,0 +1,3 @@
+[submodule "tree-sitter-graphql-original"]
+	path = tree-sitter-graphql-original
+	url = git@github.com:dralletje/tree-sitter-graphql.git

@@ -1,0 +1,64 @@
+name: Build C Lib
+on:
+  push:
+    branches:
+      - '**'
+
+jobs:
+  build-lib:
+    strategy:
+      matrix:
+        # macos-12 for Intel Mac, macos-14 for Apple Chips Mac
+        os: [ ubuntu-20.04, windows-2019, macos-12, macos-14 ]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: 'true'
+      - uses: actions/setup-java@v3
+        with:
+          distribution: 'corretto'
+          java-version: '17'
+      - run: ./gradlew generateGrammarFilesEnhanced
+      - run: |
+          cd build
+          cd generated
+          if [ "$RUNNER_OS" == "Windows" ]; then
+            cmake --help
+            cmake CMakeLists.txt
+            ls -al
+            cmake --build . --target INSTALL --config Release
+            mv Release/tree-sitter-json.dll tree-sitter-json-${{runner.arch}}.dll
+          else
+            cmake CMakeLists.txt
+            make
+            if [ "$RUNNER_OS" == "macOS" ]; then
+              mv libtree-sitter-json.dylib libtree-sitter-json-${{runner.arch}}.dylib
+            else
+              mv libtree-sitter-json.so libtree-sitter-json-${{runner.arch}}.so
+            fi
+          fi
+        shell: bash # let Windows use bash
+      - uses: actions/upload-artifact@v4
+        with:
+          name: lib-${{ runner.os }}-${{ runner.arch }}
+          path: |
+            build/generated/lib*
+            build/generated/*.dll
+  merge-lib:
+    needs: build-lib
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: lib-*
+          path: .
+          merge-multiple: 'true'
+      - run: |
+          ls -alR
+      - uses: actions/upload-artifact@v4
+        with:
+          name: all-libs
+          path: |
+            lib*
+            *.dll
